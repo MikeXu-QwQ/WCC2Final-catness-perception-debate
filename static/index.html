@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>Catness Model Comparison</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            text-align: center;
+            padding: 40px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        .upload-section {
+            margin-bottom: 30px;
+        }
+
+        button {
+            padding: 8px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #4f46e5;
+            color: white;
+        }
+
+        button:hover {
+            background-color: #3730a3;
+        }
+
+        .chart-container {
+            width: 90%;
+            max-width: 700px;
+            margin: 40px auto;
+        }
+
+        canvas {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        #result-text {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+
+        img {
+            margin-top: 20px;
+            max-width: 300px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Catness Model Comparison</h1>
+
+    <!-- ✅ 上传区域 -->
+    <div class="upload-section">
+        <input type="file" id="imageInput" accept="image/*">
+        <button onclick="uploadImage()">Predict</button>
+    </div>
+
+    <!-- ✅ 图片预览 -->
+    <img id="preview" />
+
+    <!-- ✅ 图表 -->
+    <div class="chart-container">
+        <canvas id="catnessChart"></canvas>
+    </div>
+
+    <div class="chart-container">
+        <canvas id="timeChart"></canvas>
+    </div>
+
+    <div id="result-text"></div>
+
+    <script src="/static/sketch.js"></script>
+
+</body>
+</html>
