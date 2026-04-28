@@ -1,5 +1,6 @@
-# backend/main.py
 import torch
+torch.set_num_threads(1)
+
 import os
 import io
 import time
@@ -27,7 +28,7 @@ app.add_middleware(
 )
 
 # -----------------------------
-# Static files (frontend)
+# Static files
 # -----------------------------
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -43,7 +44,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 RESNET_PATH = os.path.join(BASE_DIR, "weights", "resnet18_regression.pth")
 VIT_PATH = os.path.join(BASE_DIR, "weights", "vit_tiny_regression.pth")
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cpu")   # ✅ force CPU for Render
 
 # -----------------------------
 # Load Models
@@ -57,6 +58,12 @@ vit_model = ViTRegression()
 vit_model.load_state_dict(torch.load(VIT_PATH, map_location=device))
 vit_model.to(device)
 vit_model.eval()
+
+# ✅ Warmup (important for Render cold start)
+dummy = torch.zeros(1, 3, 224, 224).to(device)
+with torch.inference_mode():
+    resnet_model(dummy)
+    vit_model(dummy)
 
 # -----------------------------
 # Transform
@@ -98,3 +105,10 @@ async def predict(file: UploadFile = File(...)):
         }
 
     return results
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    port = int(os.environ.get("PORT", 10000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port)

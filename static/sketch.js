@@ -1,73 +1,78 @@
-let catnessChart;
-let timeChart;
+async function analyzeImage() {
 
-function renderCharts(data) {
+    const input = document.getElementById("imageInput");
+    const file = input.files[0];
 
-    const catnessCtx = document.getElementById('catnessChart');
-    const timeCtx = document.getElementById('timeChart');
-
-    if (catnessChart) catnessChart.destroy();
-    if (timeChart) timeChart.destroy();
-
-    catnessChart = new Chart(catnessCtx, {
-        type: 'bar',
-        data: {
-            labels: ['ResNet', 'ViT'],
-            datasets: [{
-                label: 'Catness Score',
-                data: [data.resnet.catness, data.vit.catness],
-                backgroundColor: ['#4f46e5', '#16a34a']
-            }]
-        },
-        options: {
-            scales: {
-                y: { min: 0, max: 1 }
-            }
-        }
-    });
-
-    timeChart = new Chart(timeCtx, {
-        type: 'bar',
-        data: {
-            labels: ['ResNet', 'ViT'],
-            datasets: [{
-                label: 'Inference Time (seconds)',
-                data: [data.resnet.inference_time, data.vit.inference_time],
-                backgroundColor: ['#ef4444', '#f59e0b']
-            }]
-        }
-    });
-
-    document.getElementById("result-text").innerHTML =
-        `<strong>ResNet:</strong> ${data.resnet.catness.toFixed(3)} 
-         <br>
-         <strong>ViT:</strong> ${data.vit.catness.toFixed(3)}`;
-}
-
-async function uploadImage() {
-
-    const fileInput = document.getElementById("imageInput");
-    const preview = document.getElementById("preview");
-
-    if (fileInput.files.length === 0) {
-        alert("Please select an image.");
+    if (!file) {
+        alert("Please select an image first.");
         return;
     }
 
-    const file = fileInput.files[0];
-
-    // ✅ 图片预览
+    
+    const preview = document.getElementById("preview");
     preview.src = URL.createObjectURL(file);
+
+    
+    const bgMusic = document.getElementById("bgMusic");
+    bgMusic.play().catch(() => {});
 
     const formData = new FormData();
     formData.append("file", file);
 
-   const response = await fetch("/predict", {
-    method: "POST",
-    body: formData
-    });
+    try {
+        const response = await fetch("/predict", {
+            method: "POST",
+            body: formData
+        });
 
-    const data = await response.json();
+        const data = await response.json();
 
-    renderCharts(data);
+        console.log("Backend response:", data);  
+
+        const dialogueBox = document.getElementById("dialogueBox");
+        const winnerBox = document.getElementById("winnerBox");
+
+        dialogueBox.innerHTML = "";
+        winnerBox.innerHTML = "";
+
+        const resScore = data.resnet.catness;
+        const vitScore = data.vit.catness;
+
+        
+        const resnetBubble = document.createElement("div");
+        resnetBubble.className = "bubble resnet-bubble";
+        resnetBubble.innerText =
+            "ResNet: I think catness is " + resScore.toFixed(3) +
+            " (Time: " + data.resnet.inference_time + "s)";
+
+        const vitBubble = document.createElement("div");
+        vitBubble.className = "bubble vit-bubble";
+        vitBubble.innerText =
+            "ViT: I perceive catness as " + vitScore.toFixed(3) +
+            " (Time: " + data.vit.inference_time + "s)";
+
+        dialogueBox.appendChild(resnetBubble);
+        dialogueBox.appendChild(vitBubble);
+
+        
+        let winnerText = "";
+
+        if (resScore > vitScore) {
+            winnerText = "🏆 ResNet Wins!";
+        } else if (vitScore > resScore) {
+            winnerText = "🏆 ViT Wins!";
+        } else {
+            winnerText = "🤝 It's a Tie!";
+        }
+
+        winnerBox.innerText = winnerText;
+
+        
+        const successSound = document.getElementById("successSound");
+        successSound.play().catch(() => {});
+
+    } catch (error) {
+        console.error("Error:", error);
+        alert("Prediction failed. Check backend.");
+    }
 }

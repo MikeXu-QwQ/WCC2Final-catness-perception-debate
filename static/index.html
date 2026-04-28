@@ -1,91 +1,158 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8" />
-    <title>Catness Model Comparison</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<meta charset="UTF-8" />
+<title>Catness Perception Debate</title>
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f6f8;
-            text-align: center;
-            padding: 40px;
-        }
+<!-- 🎬 Cartoon Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
 
-        h1 {
-            margin-bottom: 20px;
-        }
+<style>
 
-        .upload-section {
-            margin-bottom: 30px;
-        }
+body {
+    margin: 0;
+    text-align: center;
+    color: white;
+    font-family: 'Fredoka', sans-serif;
+    background: url("/static/background.png") no-repeat center center fixed;
+    background-size: cover;
+}
 
-        button {
-            padding: 8px 16px;
-            font-size: 14px;
-            cursor: pointer;
-            border: none;
-            border-radius: 5px;
-            background-color: #4f46e5;
-            color: white;
-        }
+/* ✅ title */
+h1 {
+    margin-top: 40px;
+    font-size: 52px;
+    font-family: 'Luckiest Guy', cursive;
+    letter-spacing: 2px;
+    text-shadow:
+        4px 4px 0 rgba(0,0,0,0.7),
+        0 0 15px rgba(255,255,255,0.3);
+}
 
-        button:hover {
-            background-color: #3730a3;
-        }
+/*  upload
+.upload-section {
+    margin: 30px;
+}
 
-        .chart-container {
-            width: 90%;
-            max-width: 700px;
-            margin: 40px auto;
-        }
+/*  2 */
+#imageInput {
+    display: none;
+}
 
-        canvas {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
+/*  button */
+button {
+    padding: 12px 28px;
+    font-size: 18px;
+    border-radius: 40px;
+    border: none;
+    background: linear-gradient(45deg, #f6cfab, #75a8ff);
+    color: white;
+    cursor: pointer;
+    font-family: 'Fredoka', sans-serif;
+    margin: 0 10px;
+    transition: 0.3s ease;
+}
 
-        #result-text {
-            margin-top: 20px;
-            font-size: 18px;
-        }
+button:hover {
+    transform: scale(1.1);
+}
 
-        img {
-            margin-top: 20px;
-            max-width: 300px;
-            border-radius: 10px;
-        }
-    </style>
+/*  pic */
+img {
+    margin-top: 25px;
+    max-width: 300px;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+}
+
+/* talk */
+#dialogueBox {
+    max-width: 750px;
+    margin: 40px auto;
+}
+
+/* bubble */
+.bubble {
+    padding: 18px 24px;
+    border-radius: 30px;
+    margin: 18px 0;
+    max-width: 80%;
+    position: relative;
+    font-size: 19px;
+    backdrop-filter: blur(8px);
+    background: rgba(0,0,0,0.6);
+    color: white;
+    animation: fadeIn 0.6s ease-in-out;
+}
+
+/* bubbleres */
+.resnet-bubble {
+    background: linear-gradient(90deg, rgba(79,172,254,0.9), rgba(0,242,254,0.9));
+    text-align: left;
+}
+
+/* bubble vit */
+.vit-bubble {
+    background: linear-gradient(90deg, rgba(251, 225, 147, 0.9), rgba(245, 153, 87, 0.9));
+    text-align: left;
+    margin-left: auto;
+}
+
+/* winner ui */
+#winnerBox {
+    font-size: 34px;
+    font-family: 'Luckiest Guy', cursive;
+    margin-top: 35px;
+    text-shadow: 3px 3px 0 black;
+    animation: pop 0.5s ease;
+}
+
+/* animation */
+@keyframes fadeIn {
+    from {opacity:0; transform:translateY(10px);}
+    to {opacity:1; transform:translateY(0);}
+}
+
+@keyframes pop {
+    from { transform: scale(0.8); }
+    to { transform: scale(1); }
+}
+
+</style>
 </head>
 
 <body>
 
-    <h1>Catness Model Comparison</h1>
+<h1>Catness Perception Debate</h1>
 
-    <!-- ✅ 上传区域 -->
-    <div class="upload-section">
-        <input type="file" id="imageInput" accept="image/*">
-        <button onclick="uploadImage()">Predict</button>
-    </div>
+<div class="upload-section">
+    <input type="file" id="imageInput" accept="image/*">
+    <button id="uploadBtn">Upload File</button>
+    <button onclick="analyzeImage()">Analyze</button>
+</div>
 
-    <!-- ✅ 图片预览 -->
-    <img id="preview" />
+<img id="preview"/>
 
-    <!-- ✅ 图表 -->
-    <div class="chart-container">
-        <canvas id="catnessChart"></canvas>
-    </div>
+<div id="dialogueBox"></div>
+<div id="winnerBox"></div>
 
-    <div class="chart-container">
-        <canvas id="timeChart"></canvas>
-    </div>
+<!-- 🎵 Music -->
+<audio id="bgMusic" loop>
+<source src="/static/bgm.mp3" type="audio/mpeg">
+</audio>
 
-    <div id="result-text"></div>
+<audio id="successSound">
+<source src="/static/success.mp3" type="audio/mpeg">
+</audio>
 
-    <script src="/static/sketch.js"></script>
+<script src="/static/sketch.js"></script>
+
+<script>
+/* ✅ 让 Upload 按钮触发隐藏 input */
+document.getElementById("uploadBtn").addEventListener("click", () => {
+    document.getElementById("imageInput").click();
+});
+</script>
 
 </body>
 </html>
